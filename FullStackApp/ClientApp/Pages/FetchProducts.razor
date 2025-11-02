@@ -1,0 +1,172 @@
+@page "/fetchproducts"
+@inject HttpClient Http
+
+<PageTitle>Products</PageTitle>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Product List</h3>
+        <button class="btn btn-sm btn-outline-primary" @onclick="RefreshProducts" disabled="@isLoading">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading products...</p>
+        </div>
+    }
+    else if (errorMessage != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <strong>Error:</strong> @errorMessage
+        </div>
+        <button class="btn btn-primary" @onclick="() => LoadProductsAsync(forceRefresh: true)">Retry</button>
+    }
+    else if (products == null || products.Length == 0)
+    {
+        <div class="alert alert-info" role="alert">
+            No products available.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <small>Data cached at: <strong>@cacheTimestamp.ToString("HH:mm:ss")</strong> | Auto-refreshes after 5 minutes</small>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <ul class="list-group">
+            @foreach (var product in products)
+            {
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>@product.Name</strong>
+                            <span class="badge bg-info ms-2">@product.Category.Name</span>
+                            <span class="badge bg-secondary ms-2">Stock: @product.Stock</span>
+                            @if (product.Available)
+                            {
+                                <span class="badge bg-success ms-2">Available</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger ms-2">Out of Stock</span>
+                            }
+                        </div>
+                        <span class="badge bg-primary rounded-pill">$@product.Price.ToString("F2")</span>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-building"></i> Supplier: <strong>@product.Supplier.Name</strong> (@product.Supplier.Location)
+                        </small>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    private Product[]? products;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    // Client-side caching to reduce API calls
+    private static Product[]? cachedProducts;
+    private static DateTime cacheTimestamp = DateTime.MinValue;
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProductsAsync();
+    }
+
+    private async Task LoadProductsAsync(bool forceRefresh = false)
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            // Use cached data if available and not expired
+            if (!forceRefresh && cachedProducts != null && DateTime.Now - cacheTimestamp < CacheDuration)
+            {
+                Console.WriteLine("Loading products from cache");
+                products = cachedProducts;
+                isLoading = false;
+                return;
+            }
+
+            Console.WriteLine($"Fetching products from API (forceRefresh: {forceRefresh})");
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var response = await Http.GetFromJsonAsync<Product[]>("api/productlist", cts.Token);
+
+            if (response == null)
+            {
+                errorMessage = "Invalid response from server.";
+                Console.WriteLine("API returned null response");
+            }
+            else
+            {
+                products = response;
+                cachedProducts = response;
+                cacheTimestamp = DateTime.Now;
+                Console.WriteLine($"Successfully loaded {response.Length} products. Cache updated at {cacheTimestamp:HH:mm:ss}");
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            errorMessage = $"Network error: Unable to connect to the server. {ex.Message}";
+            Console.WriteLine($"HTTP Request Error: {ex}");
+        }
+        catch (TaskCanceledException ex)
+        {
+            errorMessage = "Request timeout: The server took too long to respond.";
+            Console.WriteLine($"Request timed out: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An unexpected error occurred: {ex.Message}";
+            Console.WriteLine($"Unexpected Error: {ex}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RefreshProducts()
+    {
+        await LoadProductsAsync(forceRefresh: true);
+    }
+
+    // Data models matching API response structure
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public double Price { get; set; }
+        public int Stock { get; set; }
+        public bool Available { get; set; }
+        public Category Category { get; set; } = new();
+        public Supplier Supplier { get; set; } = new();
+    }
+
+    public class Category
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public class Supplier
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+    }
+}
