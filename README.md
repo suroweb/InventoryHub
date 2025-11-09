@@ -56,53 +56,55 @@ Returns product array with nested category and supplier objects.
 
 ## Quick Start
 
-### Prerequisites
-- .NET 10 SDK (RC or later)
-- Docker and Docker Compose (for containerized deployment)
-- IDE with .NET support (Visual Studio, VS Code, or Rider)
+### For Local Development (Recommended)
 
-### Option 1: Docker Deployment (Recommended)
+**Production-mirroring development environment with hot reload:**
 
 ```bash
-# Clone the repository
+# 1. Clone and setup
 git clone https://github.com/yourusername/InventoryHub.git
 cd InventoryHub
+./scripts/dev-setup.sh
 
-# Start with Docker Compose
+# 2. Start development environment
+./scripts/dev-start.sh
+
+# 3. Access the application
+# Web UI: http://localhost:5173
+# API: http://localhost:5000
+# Health: http://localhost:5000/health
+
+# 4. Make changes - hot reload is automatic!
+```
+
+📖 **See [DEVELOPMENT.md](DEVELOPMENT.md) for complete development guide**
+
+### For Production Deployment
+
+```bash
+# Using Docker Compose
 docker-compose up -d
 
 # Access the application
 # Web: http://localhost
 # API: http://localhost:5000
-# Health Check: http://localhost:5000/health
+# Health: http://localhost:5000/health
 ```
 
-### Option 2: Manual Development Setup
+📖 **See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment guide**
 
-**Terminal 1 - Backend:**
-```bash
-cd FullStackApp/ServerApp
-dotnet restore
-dotnet run
-# Available at: http://localhost:<SERVERAPP_PORT>
-```
+### Prerequisites
 
-**Terminal 2 - Frontend:**
-```bash
-cd FullStackApp/ClientApp
-dotnet restore
-dotnet run
-# Available at: http://localhost:<CLIENTAPP_PORT>
-```
+**Development:**
+- Docker 20.10+ and Docker Compose 2.0+
+- Git
+- Optional: .NET 10 SDK (for native development)
 
-**Access**: Navigate to `http://localhost:<CLIENTAPP_PORT>/fetchproducts`
-
-### Run Tests
-
-```bash
-cd FullStackApp/ServerApp.Tests
-dotnet test
-```
+**Production:**
+- Docker and Docker Compose, OR
+- .NET 10 SDK, OR
+- Kubernetes cluster, OR
+- Azure subscription
 
 ---
 
@@ -345,21 +347,48 @@ See LICENSE file for details.
 
 ---
 
+## Development Workflow
+
+This project uses a **production-mirroring development environment** for consistency:
+
+1. **Setup**: `./scripts/dev-setup.sh` (one-time)
+2. **Start**: `./scripts/dev-start.sh`
+3. **Code**: Edit files in your IDE - changes auto-reload
+4. **Test**: `./scripts/dev-test.sh`
+5. **Stop**: `./scripts/dev-stop.sh`
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development guide including:
+- Hot reload configuration
+- Debugging setup
+- Database integration
+- IDE configuration
+- Troubleshooting
+
 ## Contributing
 
 Contributions are welcome! Please follow these steps:
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Set up development environment: `./scripts/dev-setup.sh`
+3. Create a feature branch (`git checkout -b feature/amazing-feature`)
+4. Make changes (with hot reload!)
+5. Run tests: `./scripts/dev-test.sh`
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
+
+## Documentation
+
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Complete local development guide
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Production deployment guide
+- **[PRODUCTION_IMPROVEMENTS.md](PRODUCTION_IMPROVEMENTS.md)** - Features and improvements summary
 
 ## Support
 
-- **Documentation**: See [DEPLOYMENT.md](DEPLOYMENT.md) for deployment guide
-- **Issues**: Report bugs at GitHub Issues
-- **Questions**: Open a discussion on GitHub Discussions
+- **Development Issues**: See [DEVELOPMENT.md](DEVELOPMENT.md) troubleshooting
+- **Deployment Issues**: See [DEPLOYMENT.md](DEPLOYMENT.md) troubleshooting
+- **Bug Reports**: [GitHub Issues](https://github.com/yourusername/InventoryHub/issues)
+- **Questions**: [GitHub Discussions](https://github.com/yourusername/InventoryHub/discussions)
 
 ---
 

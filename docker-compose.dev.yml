@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  api-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: api-dev
+    container_name: inventoryhub-api-dev
+    ports:
+      - "5000:8080"      # HTTP API
+      - "5001:8081"      # HTTPS API (optional)
+      - "5002:5002"      # Debugging port
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080;https://+:8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=DevPassword123
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - Cors__AllowedOrigins__0=http://localhost:5173
+      - Cors__AllowedOrigins__1=https://localhost:5173
+      - Cors__AllowedOrigins__2=http://localhost
+    volumes:
+      # Mount source code for hot reload
+      - ./FullStackApp/ServerApp:/app/ServerApp:cached
+      - ./FullStackApp/SharedModels:/app/SharedModels:cached
+      # Mount logs for easy access
+      - ./logs:/app/logs
+      # Mount dev certificate
+      - ./dev-certs:/https:ro
+    working_dir: /app/ServerApp
+    command: dotnet watch run --no-launch-profile
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - inventoryhub-dev-network
+
+  web-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: web-dev
+    container_name: inventoryhub-web-dev
+    ports:
+      - "5173:5173"      # Blazor WASM dev server
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5173
+    volumes:
+      # Mount source code for hot reload
+      - ./FullStackApp/ClientApp:/app/ClientApp:cached
+      - ./FullStackApp/SharedModels:/app/SharedModels:cached
+    working_dir: /app/ClientApp
+    command: dotnet watch run --no-launch-profile
+    depends_on:
+      - api-dev
+    restart: unless-stopped
+    networks:
+      - inventoryhub-dev-network
+
+  # Optional: Add a database for development (commented out by default)
+  # Uncomment when you're ready to integrate a database
+  # db-dev:
+  #   image: postgres:16-alpine
+  #   container_name: inventoryhub-db-dev
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     - POSTGRES_USER=inventoryhub
+  #     - POSTGRES_PASSWORD=DevPassword123
+  #     - POSTGRES_DB=inventoryhub_dev
+  #   volumes:
+  #     - postgres-data-dev:/var/lib/postgresql/data
+  #     - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U inventoryhub"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - inventoryhub-dev-network
+
+  # Optional: Redis for caching development (commented out by default)
+  # redis-dev:
+  #   image: redis:7-alpine
+  #   container_name: inventoryhub-redis-dev
+  #   ports:
+  #     - "6379:6379"
+  #   command: redis-server --appendonly yes
+  #   volumes:
+  #     - redis-data-dev:/data
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 3s
+  #     retries: 5
+  #   networks:
+  #     - inventoryhub-dev-network
+
+  # Optional: Mailhog for email testing in development
+  # mailhog:
+  #   image: mailhog/mailhog:latest
+  #   container_name: inventoryhub-mailhog
+  #   ports:
+  #     - "1025:1025"  # SMTP
+  #     - "8025:8025"  # Web UI
+  #   networks:
+  #     - inventoryhub-dev-network
+
+networks:
+  inventoryhub-dev-network:
+    driver: bridge
+
+volumes:
+  postgres-data-dev:
+  redis-data-dev:

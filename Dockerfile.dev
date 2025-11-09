@@ -1,0 +1,72 @@
+# Multi-stage Dockerfile for Development
+# This Dockerfile provides hot reload and debugging capabilities
+
+# Stage 1: API Development Environment
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS api-dev
+WORKDIR /app
+
+# Install debugging tools
+RUN dotnet tool install --global dotnet-ef
+RUN dotnet tool install --global dotnet-watch
+
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+# Copy project files for restore
+COPY FullStackApp/ServerApp/ServerApp.csproj FullStackApp/ServerApp/
+COPY FullStackApp/SharedModels/SharedModels.csproj FullStackApp/SharedModels/
+
+WORKDIR /app/ServerApp
+RUN dotnet restore
+
+# Copy source code (will be overridden by volume mounts in docker-compose)
+WORKDIR /app
+COPY FullStackApp/ServerApp/ FullStackApp/ServerApp/
+COPY FullStackApp/SharedModels/ FullStackApp/SharedModels/
+
+# Create logs directory
+RUN mkdir -p /app/logs
+
+WORKDIR /app/ServerApp
+
+# Expose ports for API and debugging
+EXPOSE 8080 8081 5002
+
+# Enable hot reload with dotnet watch
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+ENV DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
+
+# Default command (can be overridden in docker-compose)
+CMD ["dotnet", "watch", "run", "--no-launch-profile"]
+
+# Stage 2: Web/Blazor Development Environment
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS web-dev
+WORKDIR /app
+
+# Install debugging tools
+RUN dotnet tool install --global dotnet-watch
+
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+# Copy project files for restore
+COPY FullStackApp/ClientApp/ClientApp.csproj FullStackApp/ClientApp/
+COPY FullStackApp/SharedModels/SharedModels.csproj FullStackApp/SharedModels/
+
+WORKDIR /app/ClientApp
+RUN dotnet restore
+
+# Copy source code (will be overridden by volume mounts in docker-compose)
+WORKDIR /app
+COPY FullStackApp/ClientApp/ FullStackApp/ClientApp/
+COPY FullStackApp/SharedModels/ FullStackApp/SharedModels/
+
+WORKDIR /app/ClientApp
+
+# Expose port for Blazor dev server
+EXPOSE 5173
+
+# Enable hot reload with dotnet watch
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+ENV DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
+
+# Default command (can be overridden in docker-compose)
+CMD ["dotnet", "watch", "run", "--no-launch-profile"]

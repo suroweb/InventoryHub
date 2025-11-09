@@ -1,0 +1,56 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach to API (Docker)",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickRemoteProcess}",
+      "pipeTransport": {
+        "pipeCwd": "${workspaceRoot}",
+        "pipeProgram": "docker",
+        "pipeArgs": ["exec", "-i", "inventoryhub-api-dev"],
+        "debuggerPath": "/vsdbg/vsdbg",
+        "quoteArgs": false
+      },
+      "sourceFileMap": {
+        "/app": "${workspaceRoot}/FullStackApp"
+      }
+    },
+    {
+      "name": "Launch ServerApp (Local)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/FullStackApp/ServerApp/bin/Debug/net10.0/ServerApp.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/FullStackApp/ServerApp",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "sourceFileMap": {
+        "/Views": "${workspaceFolder}/Views"
+      }
+    },
+    {
+      "name": "Launch ClientApp (Local)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/FullStackApp/ClientApp/bin/Debug/net10.0/ClientApp.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/FullStackApp/ClientApp",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack (Local)",
+      "configurations": ["Launch ServerApp (Local)", "Launch ClientApp (Local)"]
+    }
+  ]
+}

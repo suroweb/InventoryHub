@@ -1,0 +1,73 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/FullStackApp/FullStackSolution.sln",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "test",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "${workspaceFolder}/FullStackApp/ServerApp.Tests/ServerApp.Tests.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "watch-api",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/FullStackApp/ServerApp/ServerApp.csproj"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "watch-web",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/FullStackApp/ClientApp/ClientApp.csproj"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "docker-dev-start",
+      "type": "shell",
+      "command": "./scripts/dev-start.sh",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker-dev-stop",
+      "type": "shell",
+      "command": "./scripts/dev-stop.sh",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker-dev-logs",
+      "type": "shell",
+      "command": "./scripts/dev-logs.sh",
+      "problemMatcher": []
+    }
+  ]
+}
