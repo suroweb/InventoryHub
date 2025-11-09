@@ -1,19 +1,34 @@
 # InventoryHub
 
-A full-stack inventory management application demonstrating modern web development practices with .NET 10, Blazor WebAssembly, and ASP.NET Core Minimal API.
+A **production-ready** full-stack inventory management application demonstrating modern web development practices with .NET 10, Blazor WebAssembly, and ASP.NET Core Minimal API.
 
-**Technologies**: Blazor WebAssembly, ASP.NET Core, .NET 10, Bootstrap
+**Technologies**: Blazor WebAssembly, ASP.NET Core, .NET 10, Bootstrap, Docker, Serilog
 **Development**: Built with Microsoft Copilot assistance
+**Status**: ✅ Production-Ready
 
 ---
 
 ## Features
 
+### Core Features
 - **Product Catalog**: Display products with categories, suppliers, and availability status
 - **Nested JSON Structure**: Rich data models with category and supplier information
 - **Performance Optimized**: Dual-layer caching (server + client) reducing API calls by 80%
 - **Error Handling**: Comprehensive error handling with user-friendly messages and retry functionality
 - **Responsive UI**: Bootstrap-based responsive design with real-time status indicators
+
+### Production-Ready Features
+- **Structured Logging**: Serilog integration with console and file sinks
+- **Health Checks**: Multiple health check endpoints (/health, /health/ready, /health/live)
+- **Rate Limiting**: Configurable rate limiting to prevent API abuse
+- **Security Headers**: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy
+- **Docker Support**: Multi-stage Dockerfile and docker-compose for easy deployment
+- **Configuration Management**: Environment-based configuration with appsettings.json
+- **Unit Tests**: xUnit tests with WebApplicationFactory for integration testing
+- **CI/CD Pipeline**: GitHub Actions workflow for automated build, test, and deployment
+- **API Documentation**: OpenAPI/Swagger integration for API documentation
+- **Exception Handling**: Global exception handler middleware with structured error responses
+- **Shared Models**: Reusable model library for type safety across frontend and backend
 
 ---
 
@@ -43,13 +58,31 @@ Returns product array with nested category and supplier objects.
 
 ### Prerequisites
 - .NET 10 SDK (RC or later)
-- IDE with .NET support
+- Docker and Docker Compose (for containerized deployment)
+- IDE with .NET support (Visual Studio, VS Code, or Rider)
 
-### Run the Application
+### Option 1: Docker Deployment (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/InventoryHub.git
+cd InventoryHub
+
+# Start with Docker Compose
+docker-compose up -d
+
+# Access the application
+# Web: http://localhost
+# API: http://localhost:5000
+# Health Check: http://localhost:5000/health
+```
+
+### Option 2: Manual Development Setup
 
 **Terminal 1 - Backend:**
 ```bash
 cd FullStackApp/ServerApp
+dotnet restore
 dotnet run
 # Available at: http://localhost:<SERVERAPP_PORT>
 ```
@@ -57,12 +90,19 @@ dotnet run
 **Terminal 2 - Frontend:**
 ```bash
 cd FullStackApp/ClientApp
+dotnet restore
 dotnet run
 # Available at: http://localhost:<CLIENTAPP_PORT>
 ```
 
 **Access**: Navigate to `http://localhost:<CLIENTAPP_PORT>/fetchproducts`
 
+### Run Tests
+
+```bash
+cd FullStackApp/ServerApp.Tests
+dotnet test
+```
 
 ---
 
@@ -194,13 +234,108 @@ Specific exception types for targeted error messages:
 
 ---
 
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/productlist` | GET | Get all products with categories and suppliers |
+| `/api/version` | GET | Get API version and environment info |
+| `/health` | GET | Health check endpoint |
+| `/health/ready` | GET | Readiness probe |
+| `/health/live` | GET | Liveness probe |
+| `/openapi/v1.json` | GET | OpenAPI specification (dev only) |
+
+## Configuration
+
+The application uses `appsettings.json` for configuration:
+
+```json
+{
+  "Cors": {
+    "AllowedOrigins": ["http://localhost:5173", "https://localhost:7173"]
+  },
+  "Caching": {
+    "OutputCacheDurationMinutes": 5
+  },
+  "RateLimiting": {
+    "PermitLimit": 100,
+    "WindowSeconds": 60
+  }
+}
+```
+
+See `.env.example` for Docker environment configuration.
+
+## Production Deployment
+
+For detailed production deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+Quick deployment options:
+- **Docker**: `docker-compose up -d`
+- **Kubernetes**: See `DEPLOYMENT.md` for manifests
+- **Azure App Service**: See `DEPLOYMENT.md` for Azure CLI commands
+
+## Testing
+
+The project includes comprehensive unit tests using xUnit:
+
+```bash
+# Run all tests
+dotnet test FullStackApp/ServerApp.Tests/ServerApp.Tests.csproj
+
+# Run with coverage
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+Test coverage includes:
+- API endpoint responses
+- Data model structure validation
+- Health check endpoints
+- Security headers verification
+- Error handling
+
+## CI/CD
+
+GitHub Actions workflow automatically:
+- ✅ Builds all projects
+- ✅ Runs unit tests
+- ✅ Generates code coverage
+- ✅ Builds Docker images
+- ✅ Checks code formatting
+
+## Security
+
+Production security features:
+- **HTTPS**: Enforced in production
+- **CORS**: Configurable allowed origins
+- **Rate Limiting**: 100 requests/minute by default
+- **Security Headers**: OWASP recommended headers
+- **Exception Handling**: No sensitive data leakage
+- **Input Validation**: Model validation (ready for future enhancements)
+
+## Monitoring and Logging
+
+**Structured Logging with Serilog**:
+- Console output for development
+- File logging with daily rotation
+- Structured log data for analysis
+
+**Logs location**: `/app/logs/inventoryhub-YYYYMMDD.log`
+
+**Log Levels**:
+- Information: API requests, startup events
+- Warning: Potential issues
+- Error: Handled exceptions
+- Fatal: Application crashes
+
 ## Future Enhancements
 
-- **Database Integration**: Replace in-memory data with Entity Framework Core
-- **Authentication**: Add ASP.NET Identity for user management
-- **Unit Testing**: Implement xUnit tests for business logic
-- **Logging**: Add structured logging with Serilog
-- **Configuration**: Move hardcoded values to appsettings.json
+- **Database Integration**: Replace in-memory data with Entity Framework Core + PostgreSQL/SQL Server
+- **Authentication**: Add ASP.NET Identity with JWT tokens
+- **Real-time Updates**: SignalR for live inventory updates
+- **Advanced Caching**: Redis distributed cache for multi-instance deployments
+- **Metrics**: Prometheus metrics endpoint
+- **API Versioning**: Versioned API endpoints
 
 ---
 
@@ -210,6 +345,25 @@ See LICENSE file for details.
 
 ---
 
-**Project Status**: Complete & Production-Ready
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## Support
+
+- **Documentation**: See [DEPLOYMENT.md](DEPLOYMENT.md) for deployment guide
+- **Issues**: Report bugs at GitHub Issues
+- **Questions**: Open a discussion on GitHub Discussions
+
+---
+
+**Project Status**: ✅ Production-Ready
 **Framework**: .NET 10 (Release Candidate)
-**Last Updated**: November 2025
+**Last Updated**: January 2025
+**Version**: 1.0.0
