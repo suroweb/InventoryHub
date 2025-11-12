@@ -10,6 +10,7 @@ using ServerApp.Domain.Entities;
 using ServerApp.Endpoints;
 using ServerApp.Middleware;
 using ServerApp.Services;
+using ServerApp.Services.AI;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -172,6 +173,10 @@ builder.Services.AddScoped<IExportService, ExportService>();
 builder.Services.AddScoped<IBarcodeService, BarcodeService>();
 builder.Services.AddScoped<IBackgroundJobService, BackgroundJobService>();
 
+// AI services (DeepSeek, Ollama, OpenAI support)
+builder.Services.AddScoped<IAIService, AIService>();
+builder.Services.AddScoped<IForecastingService, ForecastingService>();
+
 // Register repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -211,6 +216,7 @@ app.MapProductEndpoints();
 app.MapAnalyticsEndpoints();
 app.MapAlertEndpoints();
 app.MapWebhookEndpoints();
+app.MapAIEndpoints(); // AI-powered forecasting, recommendations, NL queries
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new
@@ -244,6 +250,10 @@ app.MapGet("/api", () => Results.Ok(new
         "QR code and barcode generation",
         "Excel and CSV data export",
         "Automated background jobs",
+        "AI-powered demand forecasting (DeepSeek, Ollama, OpenAI)",
+        "Smart reorder recommendations",
+        "Natural language inventory queries",
+        "Product recommendations and seasonality analysis",
         "RESTful API with OpenAPI documentation"
     },
     endpoints = new
@@ -255,7 +265,8 @@ app.MapGet("/api", () => Results.Ok(new
         products = "/api/v1/products",
         analytics = "/api/v1/analytics",
         alerts = "/api/v1/alerts",
-        webhooks = "/api/v1/webhooks"
+        webhooks = "/api/v1/webhooks",
+        ai = "/api/v1/ai"
     }
 }))
 .WithName("ApiInfo")
