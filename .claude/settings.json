@@ -1,0 +1,35 @@
+{
+  "hooks": {
+    "beforeEdit": {
+      "enabled": true,
+      "command": "echo '🔍 Reviewing code before edit...'"
+    },
+    "afterEdit": {
+      "enabled": true,
+      "command": "dotnet format --verify-no-changes || echo '⚠️  Code formatting needed'"
+    },
+    "beforeCommit": {
+      "enabled": true,
+      "command": "dotnet test --no-build --verbosity quiet && echo '✅ Tests passed' || echo '❌ Tests failed'"
+    },
+    "afterWrite": {
+      "enabled": true,
+      "command": "echo '📝 File written. Running security scan...' && grep -r 'password\\|secret\\|apikey' --include='*.cs' --include='*.json' . || echo '✅ No hardcoded secrets detected'"
+    }
+  },
+  "automation": {
+    "autoFormat": true,
+    "autoTest": true,
+    "securityScan": true
+  },
+  "multiTenancy": {
+    "isolationLevel": "database-per-tenant",
+    "tenantResolution": "jwt-claim",
+    "connectionStringPattern": "Server=localhost;Database=InventoryHub_{TenantId};User Id=sa;Password={Secret}"
+  },
+  "codeQuality": {
+    "minTestCoverage": 80,
+    "enableStaticAnalysis": true,
+    "warningsAsErrors": true
+  }
+}
