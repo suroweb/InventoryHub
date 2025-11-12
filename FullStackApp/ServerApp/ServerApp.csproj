@@ -21,6 +21,25 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
+
+    <!-- Real-time Communication -->
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+
+    <!-- Barcode & QR Code Generation -->
+    <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="BarcodeLib" Version="2.5.1" />
+
+    <!-- PDF & Excel Export -->
+    <PackageReference Include="iTextSharp.LGPLv2.Core" Version="3.4.23" />
+    <PackageReference Include="ClosedXML" Version="0.104.1" />
+    <PackageReference Include="EPPlus" Version="7.5.1" />
+
+    <!-- Background Jobs -->
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.14" />
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.20.9" />
+
+    <!-- CSV Processing -->
+    <PackageReference Include="CsvHelper" Version="33.0.1" />
   </ItemGroup>
 
   <ItemGroup>
