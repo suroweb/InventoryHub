@@ -155,10 +155,22 @@ builder.Services.AddMemoryCache();
 // Add HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
+// Add HttpClientFactory for webhooks
+builder.Services.AddHttpClient();
+
 // Register application services
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+
+// Enterprise services
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddScoped<IAlertService, AlertService>();
+builder.Services.AddScoped<IWebhookService, WebhookService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddScoped<IExportService, ExportService>();
+builder.Services.AddScoped<IBarcodeService, BarcodeService>();
+builder.Services.AddScoped<IBackgroundJobService, BackgroundJobService>();
 
 // Register repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -196,6 +208,9 @@ app.UseOutputCache();
 app.MapAuthEndpoints();
 app.MapTenantEndpoints();
 app.MapProductEndpoints();
+app.MapAnalyticsEndpoints();
+app.MapAlertEndpoints();
+app.MapWebhookEndpoints();
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new
@@ -218,8 +233,17 @@ app.MapGet("/api", () => Results.Ok(new
     {
         "Multi-tenant architecture with database-per-tenant isolation",
         "JWT authentication and authorization",
-        "Subscription tier management",
-        "API rate limiting per tenant",
+        "Role-based access control (RBAC) with 25+ permissions",
+        "Subscription tier management (Free, Starter, Pro, Enterprise)",
+        "API rate limiting per tenant tier",
+        "Advanced analytics dashboard with revenue tracking",
+        "Real-time stock alerts and notifications",
+        "Webhook integrations with HMAC security",
+        "Multi-location warehouse management",
+        "Comprehensive audit trails",
+        "QR code and barcode generation",
+        "Excel and CSV data export",
+        "Automated background jobs",
         "RESTful API with OpenAPI documentation"
     },
     endpoints = new
@@ -228,7 +252,10 @@ app.MapGet("/api", () => Results.Ok(new
         health = "/health",
         auth = "/api/auth",
         tenants = "/api/tenants",
-        products = "/api/v1/products"
+        products = "/api/v1/products",
+        analytics = "/api/v1/analytics",
+        alerts = "/api/v1/alerts",
+        webhooks = "/api/v1/webhooks"
     }
 }))
 .WithName("ApiInfo")
